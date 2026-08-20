@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>RehabMotion</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        #game {
+            width: 350px;
+            height: 350px;
+            margin: 20px auto;
+            background: white;
+            border: 4px solid #222;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #target {
+            width: 100px;
+            height: 100px;
+            border: 4px dashed green;
+            border-radius: 50%;
+            position: absolute;
+            left: 121px;
+            top: 121px;
+        }
+
+        #ball {
+            width: 45px;
+            height: 45px;
+            background: #ff3b30;
+            border-radius: 50%;
+            position: absolute;
+            left: 152px;
+            top: 152px;
+        }
+
+        button {
+            padding: 15px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        #startBtn {
+            background: #007bff;
+            color: white;
+        }
+
+        #resetBtn {
+            background: #555;
+            color: white;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 350px;
+            margin: 15px auto;
+        }
+
+        #score {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <h1>🎮 RehabMotion</h1>
+
+    <p>
+        Tilt your phone to move the ball.
+        Try to keep it inside the green target!
+    </p>
+
+    <button id="startBtn">
+        📱 Enable Motion
+    </button>
+
+    <button id="resetBtn">
+        🔄 Reset
+    </button>
+
+
+    <div id="game">
+
+        <div id="target"></div>
+
+        <div id="ball"></div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div id="score">
+            Score: 0
+        </div>
+
+        <p id="sensor">
+            Motion sensor waiting...
+        </p>
+
+    </div>
+
+
+<script>
+
+let ballX = 152;
+let ballY = 152;
+
+let score = 0;
+
+let sensorEnabled = false;
+
+
+// --------------------------------------
+// START SENSOR
+// --------------------------------------
+
+document.getElementById("startBtn")
+.addEventListener("click", function () {
+
+    // For iPhone/iPad
+
+    if (
+        typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+
+        DeviceOrientationEvent.requestPermission()
+
+        .then(function(permissionState) {
+
+            if (permissionState === "granted") {
+
+                startMotion();
+
+            } else {
+
+                alert("Motion permission was not granted.");
+
+            }
+
+        })
+
+        .catch(console.error);
+
+    }
+
+    else {
+
+        // Android / supported browsers
+
+        startMotion();
+
+    }
+
+});
+
+
+// --------------------------------------
+// START LISTENING
+// --------------------------------------
+
+function startMotion() {
+
+    if (sensorEnabled) return;
+
+    sensorEnabled = true;
+
+    window.addEventListener(
+        "deviceorientation",
+        handleMotion
+    );
+
+    document.getElementById("sensor").innerHTML =
+        "✅ Motion sensor active! Tilt your phone.";
+
+}
+
+
+// --------------------------------------
+// HANDLE PHONE MOVEMENT
+// --------------------------------------
+
+function handleMotion(event) {
+
+    let frontBack = event.beta || 0;
+
+    let leftRight = event.gamma || 0;
+
+
+    // Show sensor values
+
+    document.getElementById("sensor").innerHTML =
+
+        "📱 Front/Back: " +
+        frontBack.toFixed(1) +
+
+        "° <br> ↔️ Left/Right: " +
+        leftRight.toFixed(1) + "°";
+
+
+    // Move ball
+
+    ballX += leftRight * 0.08;
+
+    ballY += frontBack * 0.03;
+
+
+    // Keep ball inside game area
+
+    if (ballX < 0) ballX = 0;
+
+    if (ballX > 305) ballX = 305;
+
+    if (ballY < 0) ballY = 0;
+
+    if (ballY > 305) ballY = 305;
+
+
+    // Update ball position
+
+    document.getElementById("ball").style.left =
+        ballX + "px";
+
+    document.getElementById("ball").style.top =
+        ballY + "px";
+
+
+    // --------------------------------------
+    // CHECK IF BALL IS INSIDE TARGET
+    // --------------------------------------
+
+    if (
+
+        ballX > 121 &&
+        ballX < 176 &&
+
+        ballY > 121 &&
+        ballY < 176
+
+    ) {
+
+        score++;
+
+        document.getElementById("score").innerHTML =
+            "🏆 Score: " + score;
+
+    }
+
+}
+
+
+// --------------------------------------
+// RESET
+// --------------------------------------
+
+document.getElementById("resetBtn")
+.addEventListener("click", function () {
+
+    ballX = 152;
+    ballY = 152;
+
+    score = 0;
+
+    document.getElementById("ball").style.left =
+        ballX + "px";
+
+    document.getElementById("ball").style.top =
+        ballY + "px";
+
+    document.getElementById("score").innerHTML =
+        "Score: 0";
+
+});
+
+</script>
+
+</body>
+</html>
